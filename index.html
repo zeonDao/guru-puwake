@@ -53,45 +53,40 @@
 
             let history = loadHistory();
             let groups = Array.from({ length: groupCount }, () => []);
-            let assigned = new Set();
-
+            
             // 1. 各グループに最低2人を割り当てる
             for (let i = 0; i < groupCount; i++) {
                 for (let j = 0; j < 2; j++) {
                     if (names.length === 0) break;
-                    let chosen = names.shift();
-                    groups[i].push(chosen);
-                    assigned.add(chosen);
+                    groups[i].push(names.shift());
                 }
             }
 
-            // 2. 各グループに3人目を追加（可能な場合のみ）
+            // 2. 各グループに3人目を追加
             for (let i = 0; i < groupCount; i++) {
                 if (names.length === 0) break;
-                let availableNames = names.filter(name =>
-                    groups[i].every(member => !hasBeenTogether(history, member, name))
+                let possibleMembers = names.filter(n =>
+                    groups[i].every(member => !hasBeenTogether(history, member, n))
                 );
-                if (availableNames.length === 0) availableNames = names; // 履歴制約が厳しすぎる場合は制約を緩める
+                if (possibleMembers.length === 0) possibleMembers = names; // 制約を緩和
                 
-                if (availableNames.length > 0) {
-                    let chosen = availableNames.shift();
-                    groups[i].push(chosen);
-                    names = names.filter(n => n !== chosen);
+                if (possibleMembers.length > 0) {
+                    groups[i].push(possibleMembers[0]);
+                    names = names.filter(n => n !== possibleMembers[0]);
                 }
             }
 
-            // 3. 各グループに4人目を追加（可能な場合のみ）
+            // 3. 各グループに4人目を追加
             for (let i = 0; i < groupCount; i++) {
                 if (names.length === 0) break;
-                let availableNames = names.filter(name =>
-                    groups[i].every(member => !hasBeenTogether(history, member, name))
+                let possibleMembers = names.filter(n =>
+                    groups[i].every(member => !hasBeenTogether(history, member, n))
                 );
-                if (availableNames.length === 0) availableNames = names; // 制約緩和
+                if (possibleMembers.length === 0) possibleMembers = names; // 制約を緩和
                 
-                if (availableNames.length > 0) {
-                    let chosen = availableNames.shift();
-                    groups[i].push(chosen);
-                    names = names.filter(n => n !== chosen);
+                if (possibleMembers.length > 0) {
+                    groups[i].push(possibleMembers[0]);
+                    names = names.filter(n => n !== possibleMembers[0]);
                 }
             }
 
