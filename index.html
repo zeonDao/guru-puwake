@@ -71,6 +71,8 @@
                 let availableNames = names.filter(name =>
                     groups[i].every(member => !hasBeenTogether(history, member, name))
                 );
+                if (availableNames.length === 0) availableNames = names; // 履歴制約が厳しすぎる場合は制約を緩める
+                
                 if (availableNames.length > 0) {
                     let chosen = availableNames.shift();
                     groups[i].push(chosen);
@@ -84,6 +86,8 @@
                 let availableNames = names.filter(name =>
                     groups[i].every(member => !hasBeenTogether(history, member, name))
                 );
+                if (availableNames.length === 0) availableNames = names; // 制約緩和
+                
                 if (availableNames.length > 0) {
                     let chosen = availableNames.shift();
                     groups[i].push(chosen);
