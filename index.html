@@ -38,7 +38,7 @@
             }
 
             shuffle(participants);
-            let groups = createValidGroups(participants, groupCount);
+            let groups = distributeGroups(participants, groupCount);
             displayResult(groups);
             updatePreviousPairs(groups);
         }
@@ -50,38 +50,30 @@
             }
         }
 
-        function createValidGroups(participants, groupCount) {
+        function distributeGroups(participants, groupCount) {
             let groups = Array.from({ length: groupCount }, () => []);
-            let assigned = new Set();
-
-            for (let i = 0; i < groupCount; i++) {
-                while (groups[i].length < 2 && participants.length > 0) {
-                    let candidate = participants.find(person =>
-                        !groups[i].some(existing => previousPairs.has(person + '-' + existing) || previousPairs.has(existing + '-' + person))
-                    );
-                    
-                    if (!candidate) break;
-                    
-                    groups[i].push(candidate);
-                    assigned.add(candidate);
-                    participants = participants.filter(p => p !== candidate);
+            let index = 0;
+            
+            while (participants.length > 0) {
+                let person = participants.shift();
+                let assigned = false;
+                
+                for (let i = 0; i < groupCount; i++) {
+                    if (groups[i].length < 4 &&
+                        !groups[i].some(member => previousPairs.has(person + '-' + member) || previousPairs.has(member + '-' + person))) {
+                        groups[i].push(person);
+                        assigned = true;
+                        break;
+                    }
+                }
+                
+                if (!assigned) {
+                    groups[index % groupCount].push(person);
+                    index++;
                 }
             }
 
-            for (let i = 0; i < groupCount; i++) {
-                while (groups[i].length < 4 && participants.length > 0) {
-                    let candidate = participants.find(person =>
-                        !groups[i].some(existing => previousPairs.has(person + '-' + existing) || previousPairs.has(existing + '-' + person))
-                    );
-                    
-                    if (!candidate) break;
-                    
-                    groups[i].push(candidate);
-                    assigned.add(candidate);
-                    participants = participants.filter(p => p !== candidate);
-                }
-            }
-
+            groups = groups.filter(group => group.length >= 2);
             return groups;
         }
 
