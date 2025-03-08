@@ -38,7 +38,8 @@
             }
 
             shuffle(participants);
-            let groups = distributeGroups(participants, groupCount);
+            let groupSizes = determineGroupSizes(participants.length, groupCount);
+            let groups = distributeGroups(participants, groupSizes);
             displayResult(groups);
             updatePreviousPairs(groups);
         }
@@ -50,30 +51,45 @@
             }
         }
 
-        function distributeGroups(participants, groupCount) {
-            let groups = Array.from({ length: groupCount }, () => []);
+        function determineGroupSizes(totalParticipants, groupCount) {
+            let baseSize = Math.floor(totalParticipants / groupCount);
+            let remainder = totalParticipants % groupCount;
+            let sizes = Array(groupCount).fill(baseSize);
+            
+            for (let i = 0; i < remainder; i++) {
+                sizes[i]++;
+            }
+            
+            sizes.sort((a, b) => b - a); // できるだけ少人数のグループを作るために降順ソート
+            return sizes;
+        }
+
+        function distributeGroups(participants, groupSizes) {
+            let groups = [];
             let index = 0;
             
-            while (participants.length > 0) {
-                let person = participants.shift();
-                let assigned = false;
-                
-                for (let i = 0; i < groupCount; i++) {
-                    if (groups[i].length < 4 &&
-                        !groups[i].some(member => previousPairs.has(person + '-' + member) || previousPairs.has(member + '-' + person))) {
-                        groups[i].push(person);
-                        assigned = true;
-                        break;
+            for (let size of groupSizes) {
+                let group = [];
+                while (group.length < size && participants.length > 0) {
+                    let person = participants.shift();
+                    let assigned = false;
+                    
+                    for (let i = 0; i < groups.length; i++) {
+                        if (groups[i].length < 4 &&
+                            !groups[i].some(member => previousPairs.has(person + '-' + member) || previousPairs.has(member + '-' + person))) {
+                            groups[i].push(person);
+                            assigned = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!assigned) {
+                        group.push(person);
                     }
                 }
-                
-                if (!assigned) {
-                    groups[index % groupCount].push(person);
-                    index++;
-                }
+                groups.push(group);
             }
 
-            groups = groups.filter(group => group.length >= 2);
             return groups;
         }
 
