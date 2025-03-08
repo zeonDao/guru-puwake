@@ -29,19 +29,50 @@
             }
         }
 
+        function loadHistory() {
+            return JSON.parse(localStorage.getItem("groupHistory")) || [];
+        }
+
+        function saveHistory(groups) {
+            let history = loadHistory();
+            history.push(groups);
+            localStorage.setItem("groupHistory", JSON.stringify(history));
+        }
+
+        function hasBeenTogether(history, personA, personB) {
+            return history.some(groups =>
+                groups.some(group => group.includes(personA) && group.includes(personB))
+            );
+        }
+
         function createGroups() {
             const namesInput = document.getElementById("names").value;
             const groupCount = parseInt(document.getElementById("groupCount").value);
             let names = namesInput.split(",").map(name => name.trim()).filter(name => name);
             shuffle(names);
 
+            let history = loadHistory();
             let groups = Array.from({ length: groupCount }, () => []);
-            let index = 0;
+            let groupSizes = Array(groupCount).fill(0);
+            let minSize = 2, maxSize = 4;
+
             names.forEach(name => {
-                groups[index % groupCount].push(name);
-                index++;
+                let availableGroups = groups.map((group, index) => ({ group, index }))
+                    .filter(({ group, index }) => groupSizes[index] < maxSize && 
+                        !group.some(member => hasBeenTogether(history, member, name)));
+                
+                if (availableGroups.length > 0) {
+                    let target = availableGroups[0];
+                    target.group.push(name);
+                    groupSizes[target.index]++;
+                } else {
+                    let targetIndex = groupSizes.findIndex(size => size < maxSize);
+                    groups[targetIndex].push(name);
+                    groupSizes[targetIndex]++;
+                }
             });
 
+            saveHistory(groups);
             displayGroups(groups);
         }
 
