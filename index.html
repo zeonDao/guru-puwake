@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グループ分けアプリ</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 500px; margin: auto; }
+        .group { margin-top: 10px; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>グループ分けアプリ</h2>
+        <label>参加者（カンマ区切り）:</label>
+        <input type="text" id="names" placeholder="例: 田中, 山田, 佐藤">
+        <label>グループ数:</label>
+        <input type="number" id="groupCount" min="1" value="2">
+        <button onclick="createGroups()">グループ分け</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createGroups() {
+            const namesInput = document.getElementById("names").value;
+            const groupCount = parseInt(document.getElementById("groupCount").value);
+            let names = namesInput.split(",").map(name => name.trim()).filter(name => name);
+            shuffle(names);
+
+            let groups = Array.from({ length: groupCount }, () => []);
+            let index = 0;
+            names.forEach(name => {
+                groups[index % groupCount].push(name);
+                index++;
+            });
+
+            displayGroups(groups);
+        }
+
+        function displayGroups(groups) {
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "";
+            groups.forEach((group, i) => {
+                const div = document.createElement("div");
+                div.className = "group";
+                div.innerHTML = `<strong>グループ ${i + 1}:</strong> ${group.join(", ")}`;
+                resultDiv.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>
