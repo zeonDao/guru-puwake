@@ -53,36 +53,50 @@
 
             let history = loadHistory();
             let groups = Array.from({ length: groupCount }, () => []);
-            let groupSizes = Array(groupCount).fill(0);
-            let minSize = 2, maxSize = 4;
             let assigned = new Set();
 
-            for (let round = 0; round < names.length; round++) {
-                for (let i = 0; i < groupCount; i++) {
-                    if (groupSizes[i] >= maxSize) continue;
-                    let availableNames = names.filter(name => 
-                        !assigned.has(name) &&
-                        groups[i].every(member => !hasBeenTogether(history, member, name))
-                    );
-                    
-                    if (availableNames.length > 0) {
-                        let chosen = availableNames[0];
-                        groups[i].push(chosen);
-                        assigned.add(chosen);
-                        groupSizes[i]++;
-                    }
+            // 1. 各グループに最低2人を割り当てる
+            for (let i = 0; i < groupCount * 2 && names.length > 0; i++) {
+                let groupIndex = i % groupCount;
+                let availableNames = names.filter(name =>
+                    !assigned.has(name) && groups[groupIndex].every(member => !hasBeenTogether(history, member, name))
+                );
+                
+                if (availableNames.length > 0) {
+                    let chosen = availableNames[0];
+                    groups[groupIndex].push(chosen);
+                    assigned.add(chosen);
+                    names = names.filter(n => n !== chosen);
                 }
             }
 
-            // 余った人を強制的にグループへ（完全に分けられない場合）
-            names.forEach(name => {
-                if (!assigned.has(name)) {
-                    let targetIndex = groupSizes.findIndex(size => size < maxSize);
-                    groups[targetIndex].push(name);
-                    assigned.add(name);
-                    groupSizes[targetIndex]++;
+            // 2. 各グループに3人目を割り当てる
+            for (let i = 0; i < groupCount && names.length > 0; i++) {
+                let availableNames = names.filter(name =>
+                    !assigned.has(name) && groups[i].every(member => !hasBeenTogether(history, member, name))
+                );
+                
+                if (availableNames.length > 0) {
+                    let chosen = availableNames[0];
+                    groups[i].push(chosen);
+                    assigned.add(chosen);
+                    names = names.filter(n => n !== chosen);
                 }
-            });
+            }
+
+            // 3. 各グループに4人目を割り当てる
+            for (let i = 0; i < groupCount && names.length > 0; i++) {
+                let availableNames = names.filter(name =>
+                    !assigned.has(name) && groups[i].every(member => !hasBeenTogether(history, member, name))
+                );
+                
+                if (availableNames.length > 0) {
+                    let chosen = availableNames[0];
+                    groups[i].push(chosen);
+                    assigned.add(chosen);
+                    names = names.filter(n => n !== chosen);
+                }
+            }
 
             saveHistory(groups);
             displayGroups(groups);
