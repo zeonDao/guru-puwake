@@ -55,19 +55,31 @@
             let groups = Array.from({ length: groupCount }, () => []);
             let groupSizes = Array(groupCount).fill(0);
             let minSize = 2, maxSize = 4;
+            let assigned = new Set();
 
+            for (let round = 0; round < names.length; round++) {
+                for (let i = 0; i < groupCount; i++) {
+                    if (groupSizes[i] >= maxSize) continue;
+                    let availableNames = names.filter(name => 
+                        !assigned.has(name) &&
+                        groups[i].every(member => !hasBeenTogether(history, member, name))
+                    );
+                    
+                    if (availableNames.length > 0) {
+                        let chosen = availableNames[0];
+                        groups[i].push(chosen);
+                        assigned.add(chosen);
+                        groupSizes[i]++;
+                    }
+                }
+            }
+
+            // 余った人を強制的にグループへ（完全に分けられない場合）
             names.forEach(name => {
-                let availableGroups = groups.map((group, index) => ({ group, index }))
-                    .filter(({ group, index }) => groupSizes[index] < maxSize && 
-                        !group.some(member => hasBeenTogether(history, member, name)));
-                
-                if (availableGroups.length > 0) {
-                    let target = availableGroups[0];
-                    target.group.push(name);
-                    groupSizes[target.index]++;
-                } else {
+                if (!assigned.has(name)) {
                     let targetIndex = groupSizes.findIndex(size => size < maxSize);
                     groups[targetIndex].push(name);
+                    assigned.add(name);
                     groupSizes[targetIndex]++;
                 }
             });
