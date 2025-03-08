@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グループ分けアプリ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>グループ分けアプリ</h1>
+    
+    <div class="controls">
+        <label for="groupCount">グループ数: <span id="groupCountValue">3</span></label>
+        <input type="range" id="groupCount" min="1" max="10" value="3" oninput="updateGroupCount()">
+    </div>
+    
+    <div class="participant-section">
+        <h2>参加者</h2>
+        <input type="text" id="nameInput" placeholder="名前を入力">
+        <button onclick="addParticipant()">追加</button>
+        <ul id="participantList"></ul>
+    </div>
+    
+    <button onclick="groupPeople()">グループ分け</button>
+    <div id="result"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
