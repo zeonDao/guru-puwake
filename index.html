@@ -52,32 +52,34 @@
 
         function createValidGroups(participants, groupCount) {
             let groups = Array.from({ length: groupCount }, () => []);
-
             let assigned = new Set();
+
             for (let i = 0; i < groupCount; i++) {
-                while (groups[i].length < (participants.length / groupCount) && participants.length > 0) {
+                while (groups[i].length < 2 && participants.length > 0) {
                     let candidate = participants.find(person =>
                         !groups[i].some(existing => previousPairs.has(person + '-' + existing) || previousPairs.has(existing + '-' + person))
                     );
-
+                    
                     if (!candidate) break;
-
+                    
                     groups[i].push(candidate);
                     assigned.add(candidate);
                     participants = participants.filter(p => p !== candidate);
                 }
             }
 
-            for (let person of participants) {
-                let placed = false;
-                for (let i = 0; i < groups.length; i++) {
-                    if (groups[i].length < 4) {
-                        groups[i].push(person);
-                        placed = true;
-                        break;
-                    }
+            for (let i = 0; i < groupCount; i++) {
+                while (groups[i].length < 4 && participants.length > 0) {
+                    let candidate = participants.find(person =>
+                        !groups[i].some(existing => previousPairs.has(person + '-' + existing) || previousPairs.has(existing + '-' + person))
+                    );
+                    
+                    if (!candidate) break;
+                    
+                    groups[i].push(candidate);
+                    assigned.add(candidate);
+                    participants = participants.filter(p => p !== candidate);
                 }
-                if (!placed) console.warn("配置できなかった人がいます:", person);
             }
 
             return groups;
