@@ -27,66 +27,62 @@
     <div class="result" id="result"></div>
     <script>
         let previousPairs = new Set();
-        
+
         function createGroups() {
-            const participants = document.getElementById('participants').value.split(',').map(name => name.trim()).filter(name => name);
-            const groupCount = parseInt(document.getElementById('groupCount').value);
+            let participants = document.getElementById('participants').value.split(',').map(name => name.trim()).filter(name => name);
+            let groupCount = parseInt(document.getElementById('groupCount').value);
             
             if (participants.length < groupCount * 2) {
                 alert("各グループの人数が最低2人になるようにしてください。");
                 return;
             }
-            
+
             shuffle(participants);
-            let groups = distributeGroups(participants, groupCount);
-            groups = adjustGroups(groups);
+            let groups = createValidGroups(participants, groupCount);
             displayResult(groups);
             updatePreviousPairs(groups);
         }
-        
+
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
         }
-        
-        function distributeGroups(participants, groupCount) {
+
+        function createValidGroups(participants, groupCount) {
             let groups = Array.from({ length: groupCount }, () => []);
-            participants.forEach((participant, index) => {
-                groups[index % groupCount].push(participant);
-            });
-            return groups;
-        }
-        
-        function adjustGroups(groups) {
-            let maxAttempts = 10;
-            let attempt = 0;
-            while (attempt < maxAttempts) {
-                let changed = false;
+
+            let assigned = new Set();
+            for (let i = 0; i < groupCount; i++) {
+                while (groups[i].length < (participants.length / groupCount) && participants.length > 0) {
+                    let candidate = participants.find(person =>
+                        !groups[i].some(existing => previousPairs.has(person + '-' + existing) || previousPairs.has(existing + '-' + person))
+                    );
+
+                    if (!candidate) break;
+
+                    groups[i].push(candidate);
+                    assigned.add(candidate);
+                    participants = participants.filter(p => p !== candidate);
+                }
+            }
+
+            for (let person of participants) {
+                let placed = false;
                 for (let i = 0; i < groups.length; i++) {
-                    for (let j = 0; j < groups[i].length; j++) {
-                        let member = groups[i][j];
-                        for (let k = 0; k < groups.length; k++) {
-                            if (i !== k) {
-                                for (let l = 0; l < groups[k].length; l++) {
-                                    let swapMember = groups[k][l];
-                                    if (previousPairs.has(member + '-' + swapMember) || previousPairs.has(swapMember + '-' + member)) {
-                                        groups[i][j] = swapMember;
-                                        groups[k][l] = member;
-                                        changed = true;
-                                    }
-                                }
-                            }
-                        }
+                    if (groups[i].length < 4) {
+                        groups[i].push(person);
+                        placed = true;
+                        break;
                     }
                 }
-                if (!changed) break;
-                attempt++;
+                if (!placed) console.warn("配置できなかった人がいます:", person);
             }
+
             return groups;
         }
-        
+
         function displayResult(groups) {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = '';
@@ -94,9 +90,8 @@
                 resultDiv.innerHTML += `<p>グループ ${index + 1}: ${group.join(', ')}</p>`;
             });
         }
-        
+
         function updatePreviousPairs(groups) {
-            previousPairs.clear();
             groups.forEach(group => {
                 for (let i = 0; i < group.length; i++) {
                     for (let j = i + 1; j < group.length; j++) {
