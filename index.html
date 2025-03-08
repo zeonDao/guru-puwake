@@ -53,12 +53,13 @@
 
         function determineGroupSizes(totalParticipants, groupCount) {
             let sizes = new Array(groupCount).fill(2);
-            let remainder = totalParticipants - groupCount * 2;
+            let remaining = totalParticipants - groupCount * 2;
             
-            for (let i = 0; i < remainder; i++) {
+            for (let i = 0; i < remaining; i++) {
                 sizes[i % groupCount]++;
             }
             
+            sizes.sort((a, b) => a - b); // 2人 → 3人 → 4人の順に割り当てる
             return sizes;
         }
 
